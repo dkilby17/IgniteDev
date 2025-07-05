@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block title %}Asset Details - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <a href="/assets" class="mr-4 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">
+                    {{ asset.Year or 'Unknown' }} {{ asset.Make or 'Unknown' }} {{ asset.Model or 'Unknown' }}
+                </h1>
+                <p class="mt-1 text-sm text-gray-600">View and manage asset information</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="/assets/{{ asset.id }}/edit" class="btn btn-primary">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+            </a>
+            <a href="/assets/new" class="btn btn-secondary">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                New Asset
+            </a>
+            <button class="btn btn-error delete-asset-btn hidden" 
+                    data-asset-id="{{ asset.id }}" 
+                    data-asset-name="{{ asset.Year }} {{ asset.Make }} {{ asset.Model }}"
+                    onclick="confirmDeleteAsset(this)">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete Asset
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left Side - Asset Information -->
+        <div class="space-y-6">
+            <!-- Vehicle VIN Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-blue-900 mb-3">Vehicle Identification</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Vehicle:</span>
+                        <span class="font-medium text-gray-900">{{ asset.Year or 'Unknown' }} {{ asset.Make or 'Unknown' }} {{ asset.Model or 'Unknown' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">VIN:</span>
+                        <span class="font-medium text-gray-900 font-mono">{{ asset.VIN or asset.Vin or 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Details -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Vehicle Details</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Year:</span>
+                        <span class="text-gray-900">{{ asset.Year or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Make:</span>
+                        <span class="text-gray-900">{{ asset.Make or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Model:</span>
+                        <span class="text-gray-900">{{ asset.Model or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Trim:</span>
+                        <span class="text-gray-900">{{ asset.Trim or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Series:</span>
+                        <span class="text-gray-900">{{ asset.Series or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Color:</span>
+                        <span class="text-gray-900">{{ asset.color or 'N/A' }}</span>
+                    </div>
+                    {% if asset.Mileage %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Mileage:</span>
+                        <span class="text-gray-900">{{ "{:,}".format(asset.Mileage) }} miles</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">License Plate:</span>
+                        <span class="text-gray-900">{{ asset.LicensePlate or 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insurance Information -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Insurance Information</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Insurance Status:</span>
+                        <span class="badge {% if asset.InsuranceStatus == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                            {{ asset.InsuranceStatus or 'Unknown' }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Expiration Date:</span>
+                        <span class="text-gray-900">{{ asset.ExpirationDate | date if asset.ExpirationDate else 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Effective Date:</span>
+                        <span class="text-gray-900">{{ asset.EffectiveDate | date if asset.EffectiveDate else 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Insurance Company:</span>
+                        <span class="text-gray-900">{{ asset.InsuranceCompany or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Insurance Broker:</span>
+                        <span class="text-gray-900">{{ asset.InsuranceBroker or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Insurance Phone:</span>
+                        <span class="text-gray-900">
+                            {% if asset.InsurancePhone %}
+                                {% set phone_str = asset.InsurancePhone|string %}
+                                {% if phone_str|length == 10 %}
+                                    ({{ phone_str[0:3] }}) {{ phone_str[3:6] }}-{{ phone_str[6:10] }}
+                                {% elif phone_str|length == 11 and phone_str[0] == '1' %}
+                                    ({{ phone_str[1:4] }}) {{ phone_str[4:7] }}-{{ phone_str[7:11] }}
+                                {% else %}
+                                    {{ phone_str }}
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Policy Number:</span>
+                        <span class="text-gray-900">{{ asset.PolicyNumber or 'N/A' }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Liability Coverage:</span>
+                        <span class="text-gray-900">{{ "${:,.2f}".format(asset.Liability) if asset.Liability else 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Coverage Amount:</span>
+                        <span class="text-gray-900">{{ "${:,.2f}".format(asset.CoverageAmount) if asset.CoverageAmount else 'N/A' }}</span>
+                    </div>
+
+                    {% if asset.InsuranceCity %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Insurance City:</span>
+                        <span class="text-gray-900">{{ asset.InsuranceCity }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.InsuranceCountry %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Insurance Country:</span>
+                        <span class="text-gray-900">{{ asset.InsuranceCountry }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.InsurancePostalZipCode %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Postal/Zip Code:</span>
+                        <span class="text-gray-900">{{ asset.InsurancePostalZipCode }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.InsuranceStateProvince %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">State/Province:</span>
+                        <span class="text-gray-900">{{ asset.InsuranceStateProvince }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            {% if asset.condition or asset.location or asset.notes %}
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                <div class="space-y-3 text-sm">
+                    {% if asset.condition %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Condition:</span>
+                        <span class="text-gray-900">{{ asset.condition }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.location %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Location:</span>
+                        <span class="text-gray-900">{{ asset.location }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.notes %}
+                    <div>
+                        <span class="text-gray-600">Notes:</span>
+                        <div class="mt-1 text-gray-900 whitespace-pre-wrap">{{ asset.notes }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Side - Related Data -->
+        <div class="space-y-6">
+            <!-- Related Account -->
+            {% if account %}
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Related Account</h3>
+                    <span class="text-sm text-gray-500">Asset Owner</span>
+                </div>
+                <div class="p-4">
+                    <a href="{{ url_for('accounts_detail', account_id=account.id) }}" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900">
+                                    {{ account.account_name or account.company_name or 'Unknown Account' }}
+                                </h4>
+                                <div class="text-sm text-gray-600 space-y-1 mt-1">
+                                    {% if account.account_number %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M5 9h14M5 15h14"/></svg>
+                                        Account #{{ account.account_number }}
+                                    </p>
+                                    {% endif %}
+                                    {% if account.primary_email %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        {{ account.primary_email }}
+                                    </p>
+                                    {% endif %}
+                                    {% if account.account_type %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                                        {{ account.account_type }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <span class="badge {% if account.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                                {{ account.status or 'Unknown' }}
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Primary Contact -->
+            {% if contact %}
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Primary Contact</h3>
+                    <span class="text-sm text-gray-500">Asset Owner</span>
+                </div>
+                <div class="p-4">
+                    <a href="{{ url_for('contacts_detail', contact_id=contact.id) }}" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900">
+                                    {% if contact.display_name %}
+                                        {{ contact.display_name }}
+                                    {% elif contact.first_name or contact.last_name %}
+                                        {{ contact.first_name or '' }} {{ contact.last_name or '' }}
+                                    {% else %}
+                                        Unknown Contact
+                                    {% endif %}
+                                </h4>
+                                <div class="text-sm text-gray-600 space-y-1 mt-1">
+                                    {% if contact.primary_email or contact.email %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        {{ contact.primary_email or contact.email }}
+                                    </p>
+                                    {% endif %}
+                                    {% if contact.home_phone or contact.phone %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                        {{ contact.home_phone or contact.phone }}
+                                    </p>
+                                    {% endif %}
+                                    {% if contact.cell_phone or contact.mobile_phone %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a1 1 0 001-1V4a1 1 0 00-1-1H8a1 1 0 00-1 1v16a1 1 0 001 1z"/></svg>
+                                        {{ contact.cell_phone or contact.mobile_phone }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <span class="badge {% if contact.relationship_to_account and contact.relationship_to_account != '' %}{% if contact.relationship_to_account == 'Primary Borrower' %}badge-primary{% elif contact.relationship_to_account == 'Co-Borrower' %}badge-info{% elif contact.relationship_to_account == 'Primary Contact' %}badge-primary{% elif contact.relationship_to_account == 'Guarantor' %}badge-warning{% elif contact.relationship_to_account == 'Spouse' %}badge-secondary{% elif contact.relationship_to_account == 'Emergency' %}badge-danger{% else %}badge-secondary{% endif %}{% elif contact.is_primary_contact %}badge-primary{% else %}badge-secondary{% endif %}">
+                                {% if contact.relationship_to_account and contact.relationship_to_account != '' %}
+                                    {% if contact.relationship_to_account == 'Primary Borrower' %}
+                                        Primary
+                                    {% elif contact.relationship_to_account == 'Co-Borrower' %}
+                                        Co-Borrower
+                                    {% elif contact.relationship_to_account == 'Primary Contact' %}
+                                        Primary
+                                    {% elif contact.relationship_to_account == 'Guarantor' %}
+                                        Guarantor
+                                    {% elif contact.relationship_to_account == 'Spouse' %}
+                                        Spouse
+                                    {% elif contact.relationship_to_account == 'Emergency' %}
+                                        Emergency
+                                    {% else %}
+                                        {{ contact.relationship_to_account }}
+                                    {% endif %}
+                                {% elif contact.is_primary_contact %}
+                                    Primary
+                                {% else %}
+                                    Contact
+                                {% endif %}
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Loans -->
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Related Loans ({{ loans|length if loans else 0 }})</h3>
+                    <span class="text-sm text-gray-500">Asset Financing</span>
+                </div>
+                <div class="p-4">
+                    {% if loans %}
+                        <div class="space-y-3">
+                            {% for loan in loans %}
+                            {% set principal_balance = (loan.principal_balance | float) if loan.principal_balance else 0 %}
+                            {% set past_due_fees = (loan.past_due_fees | float) if loan.past_due_fees else 0 %}
+                            {% set past_due_amount = (loan.past_due_amount | float) if loan.past_due_amount else 0 %}
+                            {% set total_owing = past_due_amount + past_due_fees %}
+                            {% set days_delinquent = (loan.days_past_due | int) if loan.days_past_due else ((loan.days_delinquent | int) if loan.days_delinquent else 0) %}
+                            {% set needs_attention = days_delinquent > 0 %}
+                            {% set status = (loan.status or loan.loan_status or 'unknown') | lower %}
+                            
+                            <a href="{{ url_for('loans_detail', loan_id=loan.id) }}" class="block border border-gray-200 rounded-lg p-4 {% if needs_attention %}border-red-200 bg-red-50{% else %}bg-gray-50{% endif %} hover:bg-gray-100 transition-colors">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-medium text-blue-600">
+                                        Contract #{{ loan.contract_number or loan.contractnumber or loan.contract_id or loan.loan_number or loan.id }}
+                                    </h4>
+                                    <span class="badge {% if status == 'active' %}badge-success{% elif status == 'pending' %}badge-warning{% elif status == 'closed' or status == 'paid off' %}badge-info{% else %}badge-secondary{% endif %}">
+                                        {{ (loan.status or loan.loan_status or 'Unknown') | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </div>
+                                <div class="space-y-2 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Principal Balance:</span>
+                                        <span class="font-medium text-gray-900">${{ "%.2f"|format(principal_balance) }}</span>
+                                    </div>
+                                    {% if loan.monthly_payment %}
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Monthly Payment:</span>
+                                        <span class="font-medium text-gray-900">${{ "%.2f"|format(loan.monthly_payment | float) }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="flex justify-between w-full">
+                                        <div class="flex">
+                                            <span class="text-gray-500">Days Delinquent:</span>
+                                            <span class="font-medium {% if days_delinquent > 0 %}text-red-600{% else %}text-gray-900{% endif %} ml-2">{{ days_delinquent }} days</span>
+                                        </div>
+                                        <div class="flex">
+                                            <span class="text-gray-500">Total Owing:</span>
+                                            <span class="font-medium text-gray-900 ml-2">${{ "%.2f"|format(total_owing) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if needs_attention %}
+                                <div class="mt-3 pt-3 border-t border-red-100">
+                                    <div class="flex items-center text-xs text-red-600">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Attention Required
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-gray-500 py-8">
+                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                            <p class="mt-2">No loans found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Related Cases -->
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Related Cases ({{ cases|length if cases else 0 }})</h3>
+                    <span class="text-sm text-gray-500">Support History</span>
+                </div>
+                <div class="p-4">
+                    {% if cases %}
+                        <div class="space-y-3">
+                            {% for case in cases %}
+                            <a href="{{ url_for('cases_detail', case_id=case.id) }}" class="block border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-sm font-medium text-blue-600">
+                                        Case #{{ case.get('case_number') or case.get('id') or 'Unknown' }}
+                                    </h4>
+                                    <span class="badge {% if case.get('status') == 'Open' %}badge-warning{% elif case.get('status') == 'New' %}badge-info{% elif case.get('status') == 'Closed' %}badge-success{% elif case.get('status') == 'In Progress' %}badge-info{% else %}badge-secondary{% endif %}">
+                                        {{ case.get('status', 'Unknown') }}
+                                    </span>
+                                </div>
+                                {% if case.get('subject') %}
+                                <div class="text-sm font-medium text-gray-900 mb-2">{{ case.get('subject') }}</div>
+                                {% endif %}
+                                <div class="mt-2 space-y-1 text-xs text-gray-600">
+                                    <div class="flex justify-between">
+                                        <span>Case Type:</span>
+                                        <span class="font-medium text-gray-800">{{ case.get('case_type', 'N/A') }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Created Date:</span>
+                                        <span class="font-medium text-gray-800">{{ case.get('created_at') | date if case.get('created_at') else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                {% if case.get('description') %}
+                                <div class="mt-2 text-xs text-gray-600">
+                                    {{ case.get('description')[:100] }}{% if case.get('description')|length > 100 %}...{% endif %}
+                                </div>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-gray-500 py-8">
+                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="mt-2">No cases found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mt-2">Delete Asset</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    Are you sure you want to delete the asset "<span id="deleteAssetName" class="font-medium"></span>"? 
+                    This action cannot be undone and will permanently remove all associated data.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="cancelDelete" class="px-4 py-2 bg-gray-300 text-gray-900 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 mr-2">
+                    Cancel
+                </button>
+                <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/assets.js') }}"></script>
+{% endblock %}

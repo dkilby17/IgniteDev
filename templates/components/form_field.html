@@ -1,0 +1,28 @@
+{% macro render_field(field_name, label, field_type='text', required=false, value='', options=[], placeholder='', extra_classes='') %}
+    <div class="form-group {{ extra_classes }}">
+        <label for="{{ field_name }}" class="form-label">
+            {{ label }}{% if required %} *{% endif %}
+        </label>
+        
+        {% if field_type == 'select' %}
+            <select name="{{ field_name }}" id="{{ field_name }}" class="form-input form-select" {% if required %}required{% endif %}>
+                {% for option_value, option_label in options %}
+                    <option value="{{ option_value }}" {% if option_value == value %}selected{% endif %}>
+                        {{ option_label }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% elif field_type == 'textarea' %}
+            <textarea name="{{ field_name }}" id="{{ field_name }}" class="form-input" 
+                      {% if required %}required{% endif %} 
+                      {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+                      rows="4">{{ value }}</textarea>
+        {% else %}
+            <input type="{{ field_type }}" name="{{ field_name }}" id="{{ field_name }}" 
+                   class="form-input" 
+                   {% if required %}required{% endif %}
+                   {% if value %}value="{{ value }}"{% endif %}
+                   {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}>
+        {% endif %}
+    </div>
+{% endmacro %}

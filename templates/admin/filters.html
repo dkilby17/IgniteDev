@@ -1,0 +1,919 @@
+{% extends "base.html" %}
+
+{% block title %}Filter Management - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard flex h-screen bg-gray-50">
+    <!-- Admin Sidebar -->
+    <aside id="adminSidebar" class="admin-sidebar bg-white shadow-lg border-r border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="admin-nav-text text-lg font-semibold text-gray-900">Admin Panel</h2>
+                <button id="toggleSidebar" class="p-1 rounded-md hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <nav class="mt-4">
+            <!-- Dashboard -->
+            <div class="admin-nav-item" data-section="dashboard">
+                <svg class="admin-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span class="admin-nav-text">Dashboard</span>
+            </div>
+            
+            <!-- User Management -->
+            {% if admin_context.can_manage_users %}
+            <div class="admin-nav-item" data-section="users">
+                <svg class="admin-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 515 0z" />
+                </svg>
+                <span class="admin-nav-text">User Management</span>
+            </div>
+            {% endif %}
+            
+            <!-- Filter Management - Active -->
+            {% if admin_context.can_manage_filters %}
+            <div class="admin-nav-item active" data-section="filters">
+                <svg class="admin-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
+                </svg>
+                <span class="admin-nav-text">Filter Management</span>
+            </div>
+            {% endif %}
+            
+            <!-- System Settings -->
+            {% if admin_context.can_manage_system_settings %}
+            <div class="admin-nav-item" data-section="settings">
+                <svg class="admin-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="admin-nav-text">System Settings</span>
+            </div>
+            {% endif %}
+            
+            <!-- Audit Logs -->
+            {% if admin_context.can_view_audit_logs %}
+            <div class="admin-nav-item" data-section="logs">
+                <svg class="admin-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="admin-nav-text">Audit Logs</span>
+            </div>
+            {% endif %}
+        </nav>
+        
+        <!-- Back to Main App -->
+        <div class="absolute bottom-4 left-4 right-4">
+            <a href="{{ url_for('dashboard') }}" class="admin-nav-item">
+                <svg class="admin-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="admin-nav-text">Back to App</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="adminMainContent" class="admin-main-content flex-1">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 p-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Filter Management</h1>
+                    <p class="text-gray-600 mt-1">Manage dynamic filters for forms and tables</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        Welcome, {{ admin_context.user_roles|join(', ') or session.get('user_info', {}).get('username', 'Admin') }}
+                    </span>
+                    <button id="refreshBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        🔄 Refresh
+                    </button>
+                    <button id="addFilterBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        ➕ New Category
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="p-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-600 text-sm">📂</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Total Categories</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="totalCategories">
+                                {% if filter_stats and filter_stats.total_categories %}{{ filter_stats.total_categories }}{% else %}0{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <span class="text-green-600 text-sm">✅</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Active Categories</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="activeCategories">
+                                {% if filter_stats and filter_stats.active_categories %}{{ filter_stats.active_categories }}{% else %}0{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                <span class="text-purple-600 text-sm">🏷️</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Total Options</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="totalOptions">
+                                {% if filter_stats and filter_stats.total_options %}{{ filter_stats.total_options }}{% else %}0{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <span class="text-yellow-600 text-sm">📊</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Active Options</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="activeOptions">
+                                {% if filter_stats and filter_stats.active_options %}{{ filter_stats.active_options }}{% else %}0{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Categories -->
+            <div id="filtersContainer">
+                {% if filter_categories %}
+                    {% for category in filter_categories %}
+                    <div class="bg-white rounded-lg shadow p-6 mb-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ category.display_name }}</h3>
+                                <p class="text-sm text-gray-500">Category: <code class="bg-gray-200 px-2 py-1 rounded text-xs">{{ category.name }}</code></p>
+                                {% if category.description %}
+                                <p class="text-sm text-gray-600 mt-1">{{ category.description }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if category.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {% if category.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                                <button data-category-id="{{ category.id }}" class="add-filter-option-btn bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm px-3 py-1 rounded-md border border-blue-200">
+                                    Add Option
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if category.options and category.options|length > 0 %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {% for option in category.options %}
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 {% if not option.is_active %}opacity-50{% endif %}">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h5 class="font-medium text-gray-900">{{ option.display_name }}</h5>
+                                        <p class="text-sm text-gray-500">Value: <code class="bg-gray-100 px-1 rounded text-xs">{{ option.value }}</code></p>
+                                        {% if option.color_class %}
+                                        <div class="mt-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ option.color_class }}">
+                                                Preview
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex flex-col space-y-1">
+                                        <button class="filter-option-toggle text-xs {% if option.is_active %}text-yellow-600 hover:text-yellow-800{% else %}text-green-600 hover:text-green-800{% endif %}" data-option-id="{{ option.id }}">
+                                            {% if option.is_active %}Deactivate{% else %}Activate{% endif %}
+                                        </button>
+                                        <button class="filter-option-edit text-xs text-blue-600 hover:text-blue-800" data-option-id="{{ option.id }}">
+                                            Edit
+                                        </button>
+                                        <button class="filter-option-delete text-xs text-red-600 hover:text-red-800" data-option-id="{{ option.id }}">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-2">
+                                    Sort Order: {{ option.sort_order or 0 }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500 text-center py-4">No options configured for this category.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-12">
+                    <div class="text-gray-400 text-4xl mb-4">🔍</div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No filter categories found</h3>
+                    <p class="text-gray-500">Create your first filter category to get started.</p>
+                    <button id="createFirstCategory" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Create First Category
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add Filter Category Modal -->
+<div id="filterCategoryModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="filterModalTitle">Add Filter Category</h3>
+                <button id="closeFilterModal" class="text-gray-400 hover:text-gray-600">
+                    <span class="sr-only">Close</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="filterCategoryForm" class="space-y-4">
+                <div>
+                    <label for="categoryName" class="block text-sm font-medium text-gray-700">Category Name</label>
+                    <input type="text" id="categoryName" name="name" required 
+                           placeholder="e.g., priority, status, department"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Internal name (lowercase, no spaces)</p>
+                </div>
+                
+                <div>
+                    <label for="categoryDisplayName" class="block text-sm font-medium text-gray-700">Display Name</label>
+                    <input type="text" id="categoryDisplayName" name="display_name" required 
+                           placeholder="e.g., Priority, Status, Department"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="categoryDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="categoryDescription" name="description" rows="3"
+                              placeholder="Brief description of this filter category..."
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" id="categoryIsActive" name="is_active" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="categoryIsActive" class="ml-2 block text-sm text-gray-900">Active Category</label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancelFilterBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" id="saveFilterBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span id="saveFilterText">Save Category</span>
+                        <span id="savingFilterText" class="hidden">Saving...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Filter Option Modal -->
+<div id="filterOptionModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="optionModalTitle">Add Filter Option</h3>
+                <button id="closeOptionModal" class="text-gray-400 hover:text-gray-600">
+                    <span class="sr-only">Close</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="filterOptionForm" class="space-y-4">
+                <input type="hidden" id="optionCategoryId" name="category_id">
+                
+                <div>
+                    <label for="optionValue" class="block text-sm font-medium text-gray-700">Value</label>
+                    <input type="text" id="optionValue" name="value" required 
+                           placeholder="e.g., high, low, in_progress"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Internal value (lowercase, underscore for spaces)</p>
+                </div>
+                
+                <div>
+                    <label for="optionDisplayName" class="block text-sm font-medium text-gray-700">Display Name</label>
+                    <input type="text" id="optionDisplayName" name="display_name" required 
+                           placeholder="e.g., High, Low, In Progress"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="optionColorClass" class="block text-sm font-medium text-gray-700">Color Class (Optional)</label>
+                    <select id="optionColorClass" name="color_class" 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">No color</option>
+                        <option value="bg-red-100 text-red-800">Red</option>
+                        <option value="bg-yellow-100 text-yellow-800">Yellow</option>
+                        <option value="bg-green-100 text-green-800">Green</option>
+                        <option value="bg-blue-100 text-blue-800">Blue</option>
+                        <option value="bg-purple-100 text-purple-800">Purple</option>
+                        <option value="bg-gray-100 text-gray-800">Gray</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="optionSortOrder" class="block text-sm font-medium text-gray-700">Sort Order</label>
+                    <input type="number" id="optionSortOrder" name="sort_order" min="0" value="0"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Lower numbers appear first</p>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" id="optionIsActive" name="is_active" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="optionIsActive" class="ml-2 block text-sm text-gray-900">Active Option</label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancelOptionBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" id="saveOptionBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span id="saveOptionText">Save Option</span>
+                        <span id="savingOptionText" class="hidden">Saving...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include enhanced admin JavaScript -->
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+
+<!-- Pass server data to JavaScript safely -->
+<script id="server-data" type="application/json">
+{
+    "filterCategories": {% if filter_categories %}{{ filter_categories | tojson }}{% else %}[]{% endif %},
+    "filterStats": {% if filter_stats %}{{ filter_stats | tojson }}{% else %}{}{% endif %},
+    "adminContext": {% if admin_context %}{{ admin_context | tojson }}{% else %}{}{% endif %},
+    "currentSection": "filters"
+}
+</script>
+
+<!-- Initialize admin with safe data parsing -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Filters page');
+    
+    // Safely parse server data
+    try {
+        const serverDataElement = document.getElementById('server-data');
+        if (serverDataElement) {
+            window.adminData = JSON.parse(serverDataElement.textContent);
+            console.log('Admin data loaded:', window.adminData);
+        } else {
+            console.warn('No server data found, using defaults');
+            window.adminData = {
+                filterCategories: [],
+                filterStats: {},
+                adminContext: {},
+                currentSection: 'filters'
+            };
+        }
+        
+        // Initialize admin manager with fallback
+        if (typeof AdminManager !== 'undefined') {
+            try {
+                window.adminManager = new AdminManager();
+                console.log('✅ Admin manager initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing AdminManager:', error);
+                console.log('Using fallback functions instead');
+            }
+        } else {
+            console.error('❌ AdminManager class not found - admin.js may not be loaded');
+            console.log('Using fallback functions instead');
+        }
+
+        // Simple fallback functions if AdminManager isn't working
+        window.fallbackFilterFunctions = {
+            openNewCategoryModal: function() {
+                console.log('Opening new category modal (fallback)');
+                const modal = document.getElementById('filterCategoryModal');
+                const form = document.getElementById('filterCategoryForm');
+                const title = document.getElementById('filterModalTitle');
+                
+                if (modal && form) {
+                    if (title) title.textContent = 'Add Filter Category';
+                    form.reset();
+                    modal.classList.remove('hidden');
+                    console.log('✅ New category modal opened');
+                } else {
+                    alert('Category modal not found in template');
+                }
+            },
+            
+            openAddOptionModal: function(categoryId) {
+                console.log('Opening add option modal for category:', categoryId);
+                const modal = document.getElementById('filterOptionModal');
+                const form = document.getElementById('filterOptionForm');
+                const title = document.getElementById('optionModalTitle');
+                const categoryIdInput = document.getElementById('optionCategoryId');
+                
+                if (modal && form && categoryIdInput) {
+                    if (title) title.textContent = 'Add Filter Option';
+                    form.reset();
+                    categoryIdInput.value = categoryId;
+                    modal.classList.remove('hidden');
+                    console.log('✅ Add option modal opened for category:', categoryId);
+                } else {
+                    alert('Option modal not found in template');
+                    console.error('Modal elements:', {
+                        modal: !!modal,
+                        form: !!form,
+                        categoryIdInput: !!categoryIdInput
+                    });
+                }
+            },
+            
+            closeModals: function() {
+                console.log('Closing all modals (fallback)');
+                const categoryModal = document.getElementById('filterCategoryModal');
+                const optionModal = document.getElementById('filterOptionModal');
+                const categoryForm = document.getElementById('filterCategoryForm');
+                const optionForm = document.getElementById('filterOptionForm');
+                
+                // Close and reset category modal
+                if (categoryModal) {
+                    categoryModal.classList.add('hidden');
+                    console.log('✅ Category modal closed');
+                }
+                if (categoryForm) {
+                    categoryForm.reset();
+                    console.log('✅ Category form reset');
+                }
+                
+                // Close and reset option modal
+                if (optionModal) {
+                    optionModal.classList.add('hidden');
+                    console.log('✅ Option modal closed');
+                }
+                if (optionForm) {
+                    optionForm.reset();
+                    console.log('✅ Option form reset');
+                }
+            },
+            
+            refreshFilters: function() {
+                console.log('Refreshing filters (fallback)');
+                window.location.reload();
+            }
+        };
+
+        // Make fallback functions globally available for testing
+        window.openNewCategory = window.fallbackFilterFunctions.openNewCategoryModal;
+        window.openAddOption = window.fallbackFilterFunctions.openAddOptionModal;
+        window.closeModals = window.fallbackFilterFunctions.closeModals;
+        window.closeAllModals = window.fallbackFilterFunctions.closeModals; // Alternative name
+        
+        // Debug function to check category buttons
+        window.debugCategoryButtons = function() {
+            console.log('=== DEBUGGING CATEGORY BUTTONS ===');
+            const buttons = document.querySelectorAll('.add-filter-option-btn');
+            console.log('Found', buttons.length, 'Add Option buttons');
+            
+            buttons.forEach((button, index) => {
+                console.log(`Button ${index + 1}:`);
+                console.log('  - Element:', button);
+                console.log('  - data-category-id:', button.getAttribute('data-category-id'));
+                console.log('  - All attributes:', Array.from(button.attributes).map(attr => `${attr.name}="${attr.value}"`));
+                console.log('  - Text content:', button.textContent.trim());
+                console.log('  - Parent:', button.parentElement);
+            });
+            
+            // Also check if categories have IDs
+            const categories = document.querySelectorAll('[data-category-id]');
+            console.log('All elements with data-category-id:', categories.length);
+            categories.forEach((el, index) => {
+                console.log(`Element ${index + 1}: ${el.tagName} with ID: ${el.getAttribute('data-category-id')}`);
+            });
+        };
+        
+        console.log('✅ Global functions available: openNewCategory(), openAddOption(categoryId), closeModals(), debugCategoryButtons()');
+        
+        // Initialize filter-specific event listeners with better error handling
+        document.addEventListener('click', function(e) {
+            console.log('Click detected on element:', e.target);
+            console.log('Element classes:', e.target.className);
+            console.log('Element ID:', e.target.id);
+            
+            // Check if it's the Add Option button
+            if (e.target.classList.contains('add-filter-option-btn') || 
+                e.target.textContent.trim() === 'Add Option' ||
+                e.target.closest('.add-filter-option-btn')) {
+                e.preventDefault();
+                
+                let categoryId = e.target.getAttribute('data-category-id');
+                let buttonElement = e.target;
+                
+                // If not found, check parent element
+                if (!categoryId && e.target.closest('.add-filter-option-btn')) {
+                    buttonElement = e.target.closest('.add-filter-option-btn');
+                    categoryId = buttonElement.getAttribute('data-category-id');
+                }
+                
+                console.log('🎯 ADD OPTION button clicked');
+                console.log('  - Button element:', buttonElement);
+                console.log('  - Category ID found:', categoryId);
+                console.log('  - All button attributes:', Array.from(buttonElement.attributes).map(attr => `${attr.name}="${attr.value}"`));
+                
+                if (categoryId) {
+                    if (window.adminManager && window.adminManager.openAddFilterOptionModal) {
+                        window.adminManager.openAddFilterOptionModal(categoryId);
+                    } else {
+                        console.log('Using fallback for Add Option modal');
+                        window.fallbackFilterFunctions.openAddOptionModal(categoryId);
+                    }
+                } else {
+                    console.error('❌ No category ID found for Add Option button');
+                    console.log('Button HTML:', buttonElement.outerHTML);
+                    
+                    // Try to find a category ID from the context (parent elements)
+                    let contextCategoryId = null;
+                    let parent = buttonElement.parentElement;
+                    while (parent && !contextCategoryId) {
+                        contextCategoryId = parent.getAttribute('data-category-id') || 
+                                           parent.querySelector('[data-category-id]')?.getAttribute('data-category-id');
+                        parent = parent.parentElement;
+                    }
+                    
+                    if (contextCategoryId) {
+                        console.log('✅ Found category ID from context:', contextCategoryId);
+                        window.fallbackFilterFunctions.openAddOptionModal(contextCategoryId);
+                    } else {
+                        alert('Error: No category ID found. Please refresh the page and try again.\n\nDebug info: Run debugCategoryButtons() in console for more details.');
+                    }
+                }
+                return; // Important: exit early to prevent other handlers
+            }
+            
+            if (e.target.classList.contains('filter-option-toggle')) {
+                e.preventDefault();
+                const optionId = e.target.getAttribute('data-option-id');
+                console.log('Toggle option clicked:', optionId);
+                if (window.adminManager && window.adminManager.toggleFilterOption) {
+                    window.adminManager.toggleFilterOption(optionId);
+                } else {
+                    console.error('toggleFilterOption not available');
+                    alert('Toggle function not available. Please refresh the page.');
+                }
+            }
+            
+            if (e.target.classList.contains('filter-option-edit')) {
+                e.preventDefault();
+                const optionId = e.target.getAttribute('data-option-id');
+                console.log('Edit option clicked:', optionId);
+                // For now, show placeholder message
+                alert('Edit filter option functionality will be implemented soon.');
+            }
+            
+            if (e.target.classList.contains('filter-option-delete')) {
+                e.preventDefault();
+                const optionId = e.target.getAttribute('data-option-id');
+                console.log('Delete option clicked:', optionId);
+                if (window.adminManager && window.adminManager.deleteFilterOption) {
+                    window.adminManager.deleteFilterOption(optionId);
+                } else {
+                    console.error('deleteFilterOption not available');
+                    if (confirm('Delete function not available via admin manager. Refresh and try again?')) {
+                        window.location.reload();
+                    }
+                }
+            }
+            
+            // Handle New Category button (alternative selector)
+            if (e.target.id === 'addFilterBtn' || e.target.closest('#addFilterBtn')) {
+                e.preventDefault();
+                console.log('New Category button clicked (alternative handler)');
+                
+                if (window.adminManager && window.adminManager.openAddFilterCategoryModal) {
+                    window.adminManager.openAddFilterCategoryModal();
+                } else {
+                    console.log('Using fallback for New Category modal');
+                    window.fallbackFilterFunctions.openNewCategoryModal();
+                }
+            }
+            
+            // Handle Refresh button (alternative selector)
+            if (e.target.id === 'refreshBtn' || e.target.closest('#refreshBtn')) {
+                e.preventDefault();
+                console.log('Refresh button clicked (alternative handler)');
+                
+                if (window.adminManager && window.adminManager.loadFilters) {
+                    window.adminManager.loadFilters();
+                } else {
+                    console.log('Reloading page as fallback');
+                    window.location.reload();
+                }
+            }
+        });
+        
+        // Handle filter category form
+        const filterCategoryForm = document.getElementById('filterCategoryForm');
+        if (filterCategoryForm) {
+            filterCategoryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (window.adminManager) {
+                    window.adminManager.handleFilterCategorySubmit(e);
+                }
+            });
+        }
+        
+        // Handle filter option form
+        const filterOptionForm = document.getElementById('filterOptionForm');
+        if (filterOptionForm) {
+            filterOptionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (window.adminManager) {
+                    window.adminManager.handleFilterOptionSubmit(e);
+                }
+            });
+        }
+        
+        // Modal close handlers with better error handling
+        const closeFilterModal = document.getElementById('closeFilterModal');
+        const cancelFilterBtn = document.getElementById('cancelFilterBtn');
+        const closeOptionModal = document.getElementById('closeOptionModal');
+        const cancelOptionBtn = document.getElementById('cancelOptionBtn');
+        
+        // Close Category Modal handlers
+        if (closeFilterModal) {
+            closeFilterModal.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Close filter modal X clicked');
+                window.fallbackFilterFunctions.closeModals();
+            });
+        }
+        
+        if (cancelFilterBtn) {
+            cancelFilterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Cancel filter button clicked');
+                window.fallbackFilterFunctions.closeModals();
+            });
+        }
+        
+        // Close Option Modal handlers  
+        if (closeOptionModal) {
+            closeOptionModal.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Close option modal X clicked');
+                window.fallbackFilterFunctions.closeModals();
+            });
+        }
+        
+        if (cancelOptionBtn) {
+            cancelOptionBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Cancel option button clicked');
+                window.fallbackFilterFunctions.closeModals();
+            });
+        }
+        
+        // Close modal when clicking outside (on backdrop)
+        const filterCategoryModal = document.getElementById('filterCategoryModal');
+        const filterOptionModal = document.getElementById('filterOptionModal');
+        
+        if (filterCategoryModal) {
+            filterCategoryModal.addEventListener('click', function(e) {
+                if (e.target.id === 'filterCategoryModal') {
+                    console.log('Clicked outside category modal');
+                    window.fallbackFilterFunctions.closeModals();
+                }
+            });
+        }
+        
+        if (filterOptionModal) {
+            filterOptionModal.addEventListener('click', function(e) {
+                if (e.target.id === 'filterOptionModal') {
+                    console.log('Clicked outside option modal');
+                    window.fallbackFilterFunctions.closeModals();
+                }
+            });
+        }
+        
+        // ESC key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                console.log('ESC key pressed - closing modals');
+                window.fallbackFilterFunctions.closeModals();
+            }
+        });
+        
+        // Add filter category button
+        const addFilterBtn = document.getElementById('addFilterBtn');
+        const createFirstCategory = document.getElementById('createFirstCategory');
+        const refreshBtn = document.getElementById('refreshBtn');
+        
+        if (addFilterBtn) {
+            addFilterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('New Category button clicked');
+                if (window.adminManager) {
+                    window.adminManager.openAddFilterCategoryModal();
+                } else {
+                    alert('Admin manager not loaded yet. Please refresh the page.');
+                }
+            });
+        }
+        
+        if (createFirstCategory) {
+            createFirstCategory.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (window.adminManager) {
+                    window.adminManager.openAddFilterCategoryModal();
+                }
+            });
+        }
+        
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Refresh button clicked');
+                if (window.adminManager) {
+                    window.adminManager.loadFilters();
+                } else {
+                    window.location.reload();
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error parsing server data:', error);
+        window.adminData = {
+            filterCategories: [],
+            filterStats: {},
+            adminContext: {},
+            currentSection: 'filters'
+        };
+    }
+});
+</script>
+
+<!-- Include the same CSS styles from admin.html -->
+<style>
+    .admin-sidebar {
+        width: 250px;
+        min-width: 250px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .admin-sidebar.collapsed {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .admin-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        margin: 4px 8px;
+        border-radius: 8px;
+        color: #6b7280;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .admin-nav-item:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+    
+    .admin-nav-item.active {
+        background-color: #3b82f6;
+        color: white;
+    }
+    
+    .admin-nav-icon {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        margin-right: 12px;
+    }
+    
+    .admin-sidebar.collapsed .admin-nav-text {
+        display: none;
+    }
+    
+    .admin-sidebar.collapsed .admin-nav-icon {
+        margin-right: 0;
+    }
+    
+    .admin-main-content {
+        flex: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-option-toggle, .filter-option-edit, .filter-option-delete {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-option-toggle:hover, .filter-option-edit:hover, .filter-option-delete:hover {
+        text-decoration: underline;
+    }
+    
+    .admin-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 1000;
+        max-width: 400px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-message.success {
+        background-color: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    
+    .admin-message.error {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+    
+    .admin-message.info {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        .admin-sidebar {
+            position: fixed;
+            left: -250px;
+            top: 0;
+            height: 100vh;
+            z-index: 50;
+        }
+        
+        .admin-sidebar.mobile-open {
+            left: 0;
+        }
+        
+        .admin-main-content {
+            margin-left: 0;
+        }
+        
+        .grid.md\\:grid-cols-2 {
+            grid-template-columns: 1fr;
+        }
+        
+        .grid.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr;
+        }
+        
+        .grid.lg\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}

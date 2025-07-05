@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contact.first_name }} {{ contact.last_name }} - Contact Details - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="mb-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <a href="{{ url_for('contacts_index') }}" class="mr-4 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">
+                    {{ contact.first_name or '' }} {{ contact.last_name or '' }}
+                    {% if not contact.first_name and not contact.last_name %}Contact Details{% endif %}
+                </h1>
+                <p class="mt-1 text-sm text-gray-600">View and manage contact information</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{{ url_for('contacts_edit', contact_id=contact.id) }}" class="btn btn-primary">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+            </a>
+            <a href="{{ url_for('contacts_index') }}" class="btn btn-secondary">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                New Contact
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-blue-900 mb-3">Contact Information</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Full Name:</span>
+                        <span class="font-medium text-gray-900">
+                            {{ contact.first_name or '' }} {{ contact.last_name or '' }}
+                            {% if not contact.first_name and not contact.last_name %}N/A{% endif %}
+                        </span>
+                    </div>
+                    {% if account %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Financial Institution:</span>
+                        <span class="font-medium text-gray-900">{{ account.financial_institution_name or account.financial_institution or 'N/A' }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Contact Type:</span>
+                        {% if contact.relationship_to_account and contact.relationship_to_account != '' %}
+                            <!-- Show clean relationship labels -->
+                            {% if contact.relationship_to_account == 'Primary Borrower' %}
+                                <span class="badge badge-primary">Primary</span>
+                            {% elif contact.relationship_to_account == 'Co-Borrower' %}
+                                <span class="badge badge-info">Co-Borrower</span>
+                            {% elif contact.relationship_to_account == 'Primary Contact' %}
+                                <span class="badge badge-primary">Primary</span>
+                            {% elif contact.relationship_to_account == 'Guarantor' %}
+                                <span class="badge badge-warning">Guarantor</span>
+                            {% elif contact.relationship_to_account == 'Spouse' %}
+                                <span class="badge badge-secondary">Spouse</span>
+                            {% elif contact.relationship_to_account == 'Emergency' %}
+                                <span class="badge badge-danger">Emergency</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ contact.relationship_to_account }}</span>
+                            {% endif %}
+                        {% elif contact.is_primary_contact %}
+                            <!-- Only show Primary if no specific relationship is set -->
+                            <span class="badge badge-primary">Primary</span>
+                        {% else %}
+                            <!-- No relationship specified -->
+                            <span class="badge badge-secondary">Unknown</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span class="badge {% if contact.status == 'Active' %}badge-success{% elif contact.status == 'Inactive' %}badge-secondary{% else %}badge-warning{% endif %}">
+                            {{ contact.status or 'Active' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">First Name:</span>
+                        <span class="text-gray-900">{{ contact.first_name or contact.firstname or 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Last Name:</span>
+                        <span class="text-gray-900">{{ contact.last_name or contact.lastname or 'N/A' }}</span>
+                    </div>
+                    {% if contact.display_name %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Display Name:</span>
+                        <span class="text-gray-900">{{ contact.display_name }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact.social_security_number %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">SSN:</span>
+                        <span class="text-gray-900">***-**-{{ contact.social_security_number[-4:] if contact.social_security_number|length >= 4 else '****' }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact.date_of_birth %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Date of Birth:</span>
+                        <span class="text-gray-900">{{ contact.date_of_birth | date }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Methods</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Primary Email:</span>
+                        <span class="text-gray-900">
+                            {% if contact.email or contact.primary_email %}
+                                <a href="mailto:{{ contact.email or contact.primary_email }}" class="text-blue-600 hover:text-blue-800">
+                                    {{ contact.email or contact.primary_email }}
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if contact.secondary_email %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Secondary Email:</span>
+                        <span class="text-gray-900">
+                            <a href="mailto:{{ contact.secondary_email }}" class="text-blue-600 hover:text-blue-800">
+                                {{ contact.secondary_email }}
+                            </a>
+                        </span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Home Phone:</span>
+                        <span class="text-gray-900">
+                            {% if contact.phone or contact.home_phone %}
+                                <a href="tel:{{ contact.phone or contact.home_phone }}" class="text-blue-600 hover:text-blue-800">
+                                    {{ contact.phone or contact.home_phone }}
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Cell Phone:</span>
+                        <span class="text-gray-900">
+                            {% if contact.cell_phone or contact.mobile_phone %}
+                                <a href="tel:{{ contact.cell_phone or contact.mobile_phone }}" class="text-blue-600 hover:text-blue-800">
+                                    {{ contact.cell_phone or contact.mobile_phone }}
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if contact.work_phone %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Work Phone:</span>
+                        <span class="text-gray-900">
+                            <a href="tel:{{ contact.work_phone }}" class="text-blue-600 hover:text-blue-800">
+                                {{ contact.work_phone }}
+                            </a>
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if contact.street_address or contact.city or contact.state_province or contact.postal_code or contact.country %}
+                {% set address_parts = [] %}
+                {% if contact.street_address %}{% set _ = address_parts.append(contact.street_address) %}{% endif %}
+                {% if contact.city %}{% set _ = address_parts.append(contact.city) %}{% endif %}
+                {% if contact.state_province %}{% set _ = address_parts.append(contact.state_province) %}{% endif %}
+                {% if contact.postal_code %}{% set _ = address_parts.append(contact.postal_code) %}{% endif %}
+                {% if contact.country %}{% set _ = address_parts.append(contact.country) %}{% endif %}
+                {% if address_parts %}
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Address Information</h3>
+                    <div class="text-sm text-gray-900">
+                        {{ address_parts | join(', ') }}
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+            
+            {% if contact.employer or contact.occupation or contact.annual_income or contact.notes %}
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                <div class="space-y-3 text-sm">
+                    {% if contact.employer %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Employer:</span>
+                        <span class="text-gray-900">{{ contact.employer }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact.occupation %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Occupation:</span>
+                        <span class="text-gray-900">{{ contact.occupation }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact.annual_income %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Annual Income:</span>
+                        <span class="text-gray-900">{{ contact.annual_income | currency }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact.notes %}
+                    <div>
+                        <span class="text-sm text-gray-600">Notes:</span>
+                        <div class="mt-1 text-sm text-gray-600">
+                            {{ contact.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="space-y-6">
+            {% if account %}
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Related Account</h3>
+                    <span class="text-sm text-gray-500">Primary Account</span>
+                </div>
+                <div class="p-4">
+                    <a href="{{ url_for('accounts_detail', account_id=account.id) }}" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900">
+                                    {{ account.account_name or account.company_name or 'Unknown Account' }}
+                                </h4>
+                                <div class="text-sm text-gray-600 space-y-1 mt-1">
+                                    {% if account.account_number %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M5 9h14M5 15h14"/></svg>
+                                        Account #{{ account.account_number }}
+                                    </p>
+                                    {% endif %}
+                                    {% if account.primary_email %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        {{ account.primary_email }}
+                                    </p>
+                                    {% endif %}
+                                    {% if account.account_type %}
+                                    <p class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                                        {{ account.account_type }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <span class="badge {% if account.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                                {{ account.status or 'Unknown' }}
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Loans 
+                        {% if loans %}
+                            ({{ loans|length }})
+                        {% else %}
+                            (0)
+                        {% endif %}
+                    </h3>
+                    <span class="text-sm text-gray-500">Contact's Loans</span>
+                </div>
+                <div class="p-4">
+                    {% if loans and loans|length > 0 %}
+                    <div class="space-y-3">
+                            {% for loan in loans %}
+                            {% set principal_balance = (loan.principal_balance | float) if loan.principal_balance else 0 %}
+                            {% set past_due_fees = (loan.past_due_fees | float) if loan.past_due_fees else 0 %}
+                            {% set past_due_amount = (loan.past_due_amount | float) if loan.past_due_amount else 0 %}
+                            {% set total_owing = past_due_amount + past_due_fees %}
+                            {% set days_delinquent = (loan.days_past_due | int) if loan.days_past_due else ((loan.days_delinquent | int) if loan.days_delinquent else 0) %}
+                            {% set needs_attention = days_delinquent > 0 %}
+                            
+                            <a href="{{ url_for('loans_detail', loan_id=loan.id) }}" class="block border border-gray-200 rounded-lg p-4 {% if needs_attention %}border-red-200 bg-red-50{% else %}bg-gray-50{% endif %} hover:bg-gray-100 transition-colors">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-medium text-blue-600">
+                                        Contract #{{ loan.contract_number or loan.contractnumber or loan.contract_id or loan.loan_number or 'Unknown' }}
+                                    </h4>
+                                    <span class="badge {% if loan.status == 'active' %}badge-success{% elif loan.status == 'pending' %}badge-warning{% elif loan.status == 'closed' %}badge-secondary{% else %}badge-secondary{% endif %}">
+                                        {{ loan.status or loan.loan_status or 'Unknown' }}
+                                    </span>
+                                </div>
+                                <div class="space-y-2 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Principal Balance:</span>
+                                        <span class="font-medium text-gray-900">${{ "%.2f"|format(principal_balance) }}</span>
+                                    </div>
+                                    <div class="flex justify-between w-full">
+                                        <div class="flex">
+                                            <span class="text-gray-500">Days Delinquent:</span>
+                                            <span class="font-medium {% if days_delinquent > 0 %}text-red-600{% else %}text-gray-900{% endif %} ml-2">{{ days_delinquent }} days</span>
+                                        </div>
+                                        <div class="flex">
+                                            <span class="text-gray-500">Total Owing:</span>
+                                            <span class="font-medium text-gray-900 ml-2">${{ "%.2f"|format(total_owing) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if needs_attention %}
+                                <div class="mt-3 pt-3 border-t border-red-100">
+                                    <div class="flex items-center text-xs text-red-600">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Attention Required
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                    <div class="text-center text-gray-500 py-8">
+                            <p class="mt-2">No loans found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Assets
+                        {% if assets %}
+                            ({{ assets|length }})
+                        {% else %}
+                            (0)
+                        {% endif %}
+                    </h3>
+                    <a href="{{ url_for('assets_new') }}?account_id={{ account.id }}" class="text-sm text-blue-600 hover:text-blue-800">Add Asset</a>
+                </div>
+                <div class="p-4">
+                    {% if assets and assets|length > 0 %}
+                        <div class="space-y-3">
+                            {% for asset in assets %}
+                            {% set raw_status = asset.get('InsuranceStatus', 'Unknown') %}
+                            {% set insurance_status = raw_status|string|trim|lower %}
+                            <a href="{{ url_for('assets_detail', asset_id=asset.id) }}" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-900 flex items-center mb-2">
+                                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            {{ asset.Year or '' }} {{ (asset.Make or '') ~ ' ' ~ (asset.Model or '') }}
+                                        </h4>
+                                        <div class="space-y-1 text-sm text-gray-600">
+                                            {% if asset.Vin %}
+                                            <p class="flex items-center">
+                                                <span class="font-mono text-xs inline-block bg-gray-200 text-gray-700 px-1 py-0.5 rounded mr-2">VIN</span>
+                                                {{ asset.Vin }}
+                                            </p>
+                                            {% endif %}
+                                            {% if asset.LicensePlate %}
+                                            <p class="flex items-center">
+                                                <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10c-.1-.1-.4-.6-.9-1.2L15.8 7c-.1-.1-.8-.7-2.2-.8L4.9 6C4.3 6 4 6.4 4 7v4c0 .6.4 1 1 1h2m0 5h10m-10 0a2 2 0 1 0 0-4m10 4a2 2 0 1 0 0-4" />
+                                                </svg>
+                                                License: {{ asset.LicensePlate }}
+                                            </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="badge {% if insurance_status == 'active' %}badge-success{% elif insurance_status == 'expired' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{ raw_status | capitalize }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-gray-500 py-8"><p class="mt-2">No assets found</p></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Cases ({% if cases and cases.__class__.__name__ == 'list' %}{{ cases|length }}{% else %}0{% endif %})</h3>
+                    <a href="{{ url_for('cases_new') }}?account_id={{ account.id }}" class="text-sm text-blue-600 hover:text-blue-800">Add Case</a>
+                </div>
+                <div class="p-4">
+                    {% if cases and cases.__class__.__name__ == 'list' and cases|length > 0 %}
+                        <div class="space-y-3">
+                            {% for case in cases %}
+                                <a href="{{ url_for('cases_detail', case_id=case.id) }}" class="block border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-sm font-medium text-blue-600">Case #{{ case.get('case_number') or case.get('id') or 'Unknown' }}</h4>
+                                        <span class="badge {% if case.get('status') == 'Open' %}badge-warning{% elif case.get('status') == 'New' %}badge-info{% elif case.get('status') == 'Closed' %}badge-success{% elif case.get('status') == 'In Progress' %}badge-info{% else %}badge-secondary{% endif %}">{{ case.get('status', 'Unknown') }}</span>
+                                    </div>
+                                    <div class="mt-2 space-y-1 text-xs text-gray-600">
+                                        <div class="flex justify-between">
+                                            <span>Case Type:</span>
+                                            <span class="font-medium text-gray-800">{{ case.get('case_type', 'N/A') }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Created Date:</span>
+                                            <span class="font-medium text-gray-800">{{ case.get('created_at') | date }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-gray-500 py-8"><p class="mt-2">No cases found</p></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

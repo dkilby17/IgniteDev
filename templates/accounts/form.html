@@ -1,0 +1,56 @@
+<!-- templates/accounts/form.html -->
+{% extends "layout.html" %}
+{% from "components/form_field.html" import render_field %}
+
+{% block title %}{% if account %}Edit Account{% else %}New Account{% endif %} - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <a href="{% if account %}{{ url_for('accounts.detail', account_id=account.id) }}{% else %}{{ url_for('accounts.index') }}{% endif %}" class="mr-4 text-blue-600 hover:text-blue-800">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if account %}Edit Account{% else %}New Account{% endif %}
+            </h1>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <form method="POST" action="{% if account %}{{ url_for('accounts.update', account_id=account.id) }}{% else %}{{ url_for('accounts.create') }}{% endif %}">
+                <div class="space-y-6">
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{ render_field('account_name', 'Account Name', required=true, value=account.account_name if account else '') }}
+                            {{ render_field('account_number', 'Account Number', value=account.account_number if account else '') }}
+                            {{ render_field('financial_institution', 'Financial Institution', value=account.financial_institution if account else '') }}
+                            {{ render_field('account_type', 'Account Type', 'select', 
+                                options=[('', 'Select Type'), ('Business', 'Business'), ('Personal', 'Personal')], 
+                                value=account.account_type if account else '') }}
+                            {{ render_field('company_name', 'Company Name', value=account.company_name if account else '') }}
+                            {{ render_field('status', 'Status', 'select', 
+                                options=[('Active', 'Active'), ('Inactive', 'Inactive')], 
+                                value=account.status if account else 'Active') }}
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3">
+                        <a href="{% if account %}{{ url_for('accounts.detail', account_id=account.id) }}{% else %}{{ url_for('accounts.index') }}{% endif %}" 
+                           class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if account %}Update Account{% else %}Create Account{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

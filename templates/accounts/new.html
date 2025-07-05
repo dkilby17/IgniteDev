@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Account{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Create New Account</h1>
+        <a href="{{ url_for('accounts_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Accounts
+        </a>
+    </div>
+
+    <div class="bg-white shadow rounded-lg">
+        <form action="{{ url_for('accounts_create') }}" method="POST" class="p-6">
+            <!-- Basic Information -->
+            <div class="mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
+                            Company Name *
+                        </label>
+                        <input type="text" id="company_name" name="company_name" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ company_name or '' }}">
+                    </div>
+                    
+                    <div>
+                        <label for="account_type" class="block text-sm font-medium text-gray-700 mb-1">
+                            Account Type *
+                        </label>
+                        <select id="account_type" name="account_type" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Type</option>
+                            <option value="individual" {{ 'selected' if account_type == 'individual' else '' }}>Individual</option>
+                            <option value="business" {{ 'selected' if account_type == 'business' else '' }}>Business</option>
+                            <option value="corporate" {{ 'selected' if account_type == 'corporate' else '' }}>Corporate</option>
+                            <option value="government" {{ 'selected' if account_type == 'government' else '' }}>Government</option>
+                            <option value="non-profit" {{ 'selected' if account_type == 'non-profit' else '' }}>Non-Profit</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="primary_email" class="block text-sm font-medium text-gray-700 mb-1">
+                            Primary Email
+                        </label>
+                        <input type="email" id="primary_email" name="primary_email"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ primary_email or '' }}">
+                    </div>
+                    
+                    <div>
+                        <label for="home_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                            Home Phone
+                        </label>
+                        <input type="tel" id="home_phone" name="home_phone"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ home_phone or '' }}">
+                    </div>
+                    
+                    <div>
+                        <label for="cell_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                            Cell Phone
+                        </label>
+                        <input type="tel" id="cell_phone" name="cell_phone"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ cell_phone or '' }}">
+                    </div>
+                    
+                    <div>
+                        <label for="work_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                            Work Phone
+                        </label>
+                        <input type="tel" id="work_phone" name="work_phone"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ work_phone or '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Address Information</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label for="street_address" class="block text-sm font-medium text-gray-700 mb-1">
+                            Street Address
+                        </label>
+                        <input type="text" id="street_address" name="street_address"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ street_address or '' }}">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-gray-700 mb-1">
+                                City
+                            </label>
+                            <input type="text" id="city" name="city"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   value="{{ city or '' }}">
+                        </div>
+                        
+                        <div>
+                            <label for="state_province" class="block text-sm font-medium text-gray-700 mb-1">
+                                State/Province
+                            </label>
+                            <input type="text" id="state_province" name="state_province"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   value="{{ state_province or '' }}">
+                        </div>
+                        
+                        <div>
+                            <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-1">
+                                Postal Code
+                            </label>
+                            <input type="text" id="postal_code" name="postal_code"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   value="{{ postal_code or '' }}">
+                        </div>
+                        
+                        <div>
+                            <label for="country" class="block text-sm font-medium text-gray-700 mb-1">
+                                Country
+                            </label>
+                            <input type="text" id="country" name="country"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   value="{{ country or '' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tags (comma-separated)
+                        </label>
+                        <input type="text" id="tags" name="tags"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               value="{{ tags or '' }}"
+                               placeholder="e.g., VIP, enterprise, prospect">
+                    </div>
+                    
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+                            Notes
+                        </label>
+                        <textarea id="notes" name="notes" rows="4"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Additional notes about this account...">{{ notes or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('accounts_index') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save mr-2"></i>Create Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

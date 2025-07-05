@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Accounts - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Accounts</h1>
+            <p class="mt-1 text-sm text-gray-600">Manage customer accounts</p>
+        </div>
+        <a href="{{ url_for('accounts_new') }}" class="btn btn-primary">
+            New Account
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text" name="search" id="search" value="{{ search or '' }}" placeholder="Account name, number..." 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div>
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                <select name="type" id="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Types</option>
+                    <option value="Business" {{ 'selected' if account_type == 'Business' else '' }}>Business</option>
+                    <option value="Personal" {{ 'selected' if account_type == 'Personal' else '' }}>Personal</option>
+                </select>
+            </div>
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Statuses</option>
+                    <option value="Active" {{ 'selected' if status == 'Active' else '' }}>Active</option>
+                    <option value="Inactive" {{ 'selected' if status == 'Inactive' else '' }}>Inactive</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="btn btn-primary w-full">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Accounts Table -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Financial Institution</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for account in accounts %}
+                <tr class="hover:bg-gray-50 cursor-pointer account-row" data-account-id="{{ account.id }}">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ account.account_name or account.company_name }}</div>
+                        <div class="text-sm text-gray-500">{{ account.account_number or 'No number' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ account.financial_institution_name or account.financial_institution or 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ account.account_type or 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="badge {% if account.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                            {{ account.status or 'Unknown' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ account.created_at | date if account.created_at else 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <!-- Edit Icon -->
+                            <a href="{{ url_for('accounts_edit', account_id=account.id) }}" 
+                               class="action-icon edit-icon text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                               title="Edit Account"
+                               onclick="event.stopPropagation();">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </a>
+                            
+                            <!-- Delete Icon (Admin Only) -->
+                            <button class="action-icon delete-icon text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors hidden"
+                                    title="Delete Account"
+                                    data-account-id="{{ account.id }}"
+                                    data-account-name="{{ account.account_name or account.company_name }}"
+                                    onclick="event.stopPropagation(); confirmDeleteAccount(this);">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        No accounts found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% if has_prev %}
+                <a href="{{ url_for('accounts_index', page=page-1, search=search, type=account_type, status=status) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+            {% endif %}
+            {% if has_next %}
+                <a href="{{ url_for('accounts_index', page=page+1, search=search, type=account_type, status=status) }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            {% endif %}
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing page <span class="font-medium">{{ page }}</span> of <span class="font-medium">{{ total_pages }}</span> 
+                    ({{ total }} total accounts)
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {% if has_prev %}
+                        <a href="{{ url_for('accounts_index', page=page-1, search=search, type=account_type, status=status) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if has_next %}
+                        <a href="{{ url_for('accounts_index', page=page+1, search=search, type=account_type, status=status) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Next
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mt-2">Delete Account</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    Are you sure you want to delete the account "<span id="deleteAccountName" class="font-medium"></span>"? 
+                    This action cannot be undone and will permanently remove all associated data.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="cancelDelete" class="px-4 py-2 bg-gray-300 text-gray-900 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 mr-2">
+                    Cancel
+                </button>
+                <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check admin access immediately and show delete buttons
+    checkAdminAccessAndShowDeleteButtons();
+    
+    // Backup check - force show delete buttons for System Administrator users
+    setTimeout(() => {
+        const welcomeText = document.body.innerText;
+        if (welcomeText.includes('System Administrator')) {
+            console.log('System Administrator detected - force showing delete buttons');
+            const deleteButtons = document.querySelectorAll('.delete-icon');
+            deleteButtons.forEach(button => {
+                button.classList.remove('hidden');
+                button.style.display = 'inline-flex';
+                button.style.visibility = 'visible';
+            });
+        }
+    }, 100);
+    
+    // Make table rows clickable
+    document.querySelectorAll('.account-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't navigate if clicking on action buttons
+            if (e.target.closest('.action-icon')) {
+                return;
+            }
+            
+            const accountId = this.dataset.accountId;
+            if (accountId) {
+                window.location.href = `/accounts/${accountId}`;
+            }
+        });
+    });
+    document.querySelectorAll('.account-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't navigate if clicking on action buttons
+            if (e.target.closest('.action-icon')) {
+                return;
+            }
+            
+            const accountId = this.dataset.accountId;
+            if (accountId) {
+                window.location.href = `/accounts/${accountId}`;
+            }
+        });
+    });
+    
+    // Delete modal functionality
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteAccountName = document.getElementById('deleteAccountName');
+    const cancelDelete = document.getElementById('cancelDelete');
+    const confirmDelete = document.getElementById('confirmDelete');
+    let accountToDelete = null;
+    
+    // Cancel delete
+    cancelDelete.addEventListener('click', function() {
+        hideDeleteModal();
+    });
+    
+    // Confirm delete
+    confirmDelete.addEventListener('click', function() {
+        if (accountToDelete) {
+            deleteAccount(accountToDelete);
+        }
+    });
+    
+    // Hide modal when clicking outside
+    deleteModal.addEventListener('click', function(e) {
+        if (e.target === deleteModal) {
+            hideDeleteModal();
+        }
+    });
+    
+    function hideDeleteModal() {
+        deleteModal.classList.add('hidden');
+        accountToDelete = null;
+    }
+    
+    // Global function for delete confirmation
+    window.confirmDeleteAccount = function(button) {
+        accountToDelete = button.dataset.accountId;
+        const accountName = button.dataset.accountName;
+        
+        deleteAccountName.textContent = accountName;
+        deleteModal.classList.remove('hidden');
+    };
+    
+    async function deleteAccount(accountId) {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert('Authentication required');
+                return;
+            }
+            
+            const response = await fetch(`/api/accounts/${accountId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                // Success - reload the page to show updated list
+                location.reload();
+            } else {
+                const error = await response.json();
+                alert(`Failed to delete account: ${error.detail || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            alert('An error occurred while deleting the account');
+        } finally {
+            hideDeleteModal();
+        }
+    }
+    
+    async function checkAdminAccessAndShowDeleteButtons() {
+        try {
+            // Check if user has admin access from localStorage first
+            const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+            const roles = userInfo.roles || [];
+            
+            // Check for admin role with multiple variations
+            const hasAdminRole = roles.some(role => {
+                if (typeof role === 'string') {
+                    return role.toLowerCase() === 'admin' || 
+                           role.toLowerCase() === 'administrator' ||
+                           role.toLowerCase() === 'system administrator';
+                } else if (typeof role === 'object' && role.name) {
+                    return role.name.toLowerCase() === 'admin' || 
+                           role.name.toLowerCase() === 'administrator' ||
+                           role.name.toLowerCase() === 'system administrator';
+                }
+                return false;
+            });
+            
+            // Also check for explicit admin confirmation
+            const adminConfirmed = localStorage.getItem('admin_access_confirmed');
+            
+            // Check if user is explicitly named as admin
+            const isAdminUser = userInfo.username === 'admin' || 
+                                userInfo.username === 'administrator' ||
+                                userInfo.email?.includes('admin');
+            
+            // Check if user is marked as superuser
+            const isSuperuser = userInfo.is_superuser === true;
+            
+            if (hasAdminRole || adminConfirmed === 'true' || isAdminUser || isSuperuser) {
+                showDeleteButtons();
+                return;
+            }
+            
+            // Check if page shows System Administrator
+            const welcomeText = document.querySelector('body')?.innerText || '';
+            const isSystemAdmin = welcomeText.includes('System Administrator');
+            
+            if (isSystemAdmin) {
+                localStorage.setItem('admin_access_confirmed', 'true');
+                showDeleteButtons();
+                return;
+            }
+            
+            // Always show for System Administrator - no API needed
+            if (document.body.innerText.includes('System Administrator')) {
+                showDeleteButtons();
+                localStorage.setItem('admin_access_confirmed', 'true');
+                return;
+            }
+            
+            // Try API check as fallback
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            
+            const adminEndpoints = [
+                '/admin/stats',
+                '/api/admin/stats',
+                '/admin/health',
+                '/api/admin/health'
+            ];
+            
+            for (const endpoint of adminEndpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        showDeleteButtons();
+                        localStorage.setItem('admin_access_confirmed', 'true');
+                        return;
+                    }
+                } catch (error) {
+                    // Continue to next endpoint
+                }
+            }
+            
+            // Final fallback for System Administrator users
+            if (document.body.innerText.includes('System Administrator')) {
+                showDeleteButtons();
+                localStorage.setItem('admin_access_confirmed', 'true');
+            }
+            
+        } catch (error) {
+            // Fallback - if there's an error, check if user appears to be admin
+            try {
+                const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+                if (userInfo.username === 'admin' || document.body.innerText.includes('System Administrator')) {
+                    showDeleteButtons();
+                    localStorage.setItem('admin_access_confirmed', 'true');
+                }
+            } catch (e) {
+                // Silent fail
+            }
+        }
+    }
+    
+    function showDeleteButtons() {
+        const deleteButtons = document.querySelectorAll('.delete-icon');
+        deleteButtons.forEach(button => {
+            button.classList.remove('hidden');
+            button.style.display = 'inline-flex';
+            button.style.visibility = 'visible';
+        });
+    }
+});
+</script>
+
+<style>
+.account-row {
+    transition: background-color 0.2s ease;
+}
+
+.account-row:hover {
+    background-color: #f9fafb;
+}
+
+.action-icon {
+    transition: all 0.2s ease;
+}
+
+.action-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Ensure icons are properly sized and aligned */
+.action-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Modal z-index override */
+#deleteModal {
+    z-index: 9999;
+}
+</style>
+{% endblock %}

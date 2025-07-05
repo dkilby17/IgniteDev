@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{% if loan %}Edit Loan{% else %}New Loan{% endif %} - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <a href="{% if loan %}{{ url_for('loans_detail', loan_id=loan.id) }}{% else %}{{ url_for('loans_index') }}{% endif %}" class="mr-4 text-blue-600 hover:text-blue-800">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if loan %}Edit Loan{% else %}New Loan{% endif %}
+            </h1>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <form method="POST" action="{% if loan %}{{ url_for('loans_update', loan_id=loan.id) }}{% else %}{{ url_for('loans_create') }}{% endif %}">
+                <div class="space-y-6">
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="contract_number" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Contract Number *
+                                </label>
+                                <input type="text" id="contract_number" name="contract_number" required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.contract_number if loan else '' }}">
+                            </div>
+                            
+                            <div>
+                                <label for="loan_type" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Loan Type
+                                </label>
+                                <select id="loan_type" name="loan_type"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Type</option>
+                                    <option value="Auto" {{ 'selected' if loan and loan.loan_type == 'Auto' else '' }}>Auto</option>
+                                    <option value="Personal" {{ 'selected' if loan and loan.loan_type == 'Personal' else '' }}>Personal</option>
+                                    <option value="Business" {{ 'selected' if loan and loan.loan_type == 'Business' else '' }}>Business</option>
+                                    <option value="Mortgage" {{ 'selected' if loan and loan.loan_type == 'Mortgage' else '' }}>Mortgage</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Status
+                                </label>
+                                <select id="status" name="status"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="Active" {{ 'selected' if loan and loan.status == 'Active' else '' }}>Active</option>
+                                    <option value="Paid Off" {{ 'selected' if loan and loan.status == 'Paid Off' else '' }}>Paid Off</option>
+                                    <option value="Default" {{ 'selected' if loan and loan.status == 'Default' else '' }}>Default</option>
+                                    <option value="Pending" {{ 'selected' if loan and loan.status == 'Pending' else '' }}>Pending</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Information -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="loan_amount" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Loan Amount
+                                </label>
+                                <input type="number" step="0.01" id="loan_amount" name="loan_amount"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.loan_amount if loan else '' }}" placeholder="0.00">
+                            </div>
+                            
+                            <div>
+                                <label for="interest_rate" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Interest Rate (%)
+                                </label>
+                                <input type="number" step="0.01" id="interest_rate" name="interest_rate"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.interest_rate if loan else '' }}" placeholder="0.00">
+                            </div>
+                            
+                            <div>
+                                <label for="loan_term" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Loan Term (Years)
+                                </label>
+                                <input type="number" id="loan_term" name="loan_term"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.loan_term if loan else '' }}" placeholder="5">
+                            </div>
+                            
+                            <div>
+                                <label for="monthly_payment" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Monthly Payment
+                                </label>
+                                <input type="number" step="0.01" id="monthly_payment" name="monthly_payment"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.monthly_payment if loan else '' }}" placeholder="0.00">
+                            </div>
+                            
+                            <div>
+                                <label for="principal_balance" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Principal Balance
+                                </label>
+                                <input type="number" step="0.01" id="principal_balance" name="principal_balance"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.principal_balance if loan else '' }}" placeholder="0.00">
+                            </div>
+                            
+                            <div>
+                                <label for="next_payment_date" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Next Payment Date
+                                </label>
+                                <input type="date" id="next_payment_date" name="next_payment_date"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       value="{{ loan.next_payment_date if loan else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Relationships -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Relationships</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="account_id" class="block text-sm font-medium text-gray-700 mb-1">Account</label>
+                                <select name="account_id" id="account_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.id }}" {% if loan and loan.account_id == account.id %}selected{% endif %}>
+                                        {{ account.account_name or account.company_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="contact_id" class="block text-sm font-medium text-gray-700 mb-1">Primary Contact</label>
+                                <select name="contact_id" id="contact_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Contact</option>
+                                    {% for contact in contacts %}
+                                    <option value="{{ contact.id }}" {% if loan and loan.contact_id == contact.id %}selected{% endif %}>
+                                        {{ contact.first_name }} {{ contact.last_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                        <a href="{% if loan %}{{ url_for('loans_detail', loan_id=loan.id) }}{% else %}{{ url_for('loans_index') }}{% endif %}" 
+                           class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if loan %}Update Loan{% else %}Create Loan{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-calculate monthly payment
+document.addEventListener('DOMContentLoaded', function() {
+    const loanAmount = document.querySelector('input[name="loan_amount"]');
+    const interestRate = document.querySelector('input[name="interest_rate"]');
+    const loanTerm = document.querySelector('input[name="loan_term"]');
+    const monthlyPayment = document.querySelector('input[name="monthly_payment"]');
+
+    function calculatePayment() {
+        const principal = parseFloat(loanAmount.value) || 0;
+        const rate = parseFloat(interestRate.value) || 0;
+        const years = parseFloat(loanTerm.value) || 0;
+
+        if (principal > 0 && rate > 0 && years > 0) {
+            const monthlyRate = rate / 100 / 12;
+            const numPayments = years * 12;
+            
+            const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+                           (Math.pow(1 + monthlyRate, numPayments) - 1);
+            
+            monthlyPayment.value = payment.toFixed(2);
+        }
+    }
+
+    [loanAmount, interestRate, loanTerm].forEach(input => {
+        if (input) {
+            input.addEventListener('input', calculatePayment);
+        }
+    });
+});
+</script>
+{% endblock %}

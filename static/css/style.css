@@ -1,0 +1,402 @@
+/* css/style.css - Clean, simple sidebar implementation with WORKING tooltips + Loans styles */
+
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #059669;
+    --error-color: #dc2626;
+    --warning-color: #d97706;
+    --sidebar-width: 64px;
+    --navbar-height: 64px;
+}
+
+/* Global styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    line-height: 1.6;
+    color: #374151;
+    margin: 0;
+    padding: 0;
+}
+
+/* Fixed Sidebar Styles - Always collapsed, icons only */
+.sidebar-fixed {
+    position: fixed;
+    left: 0;
+    top: var(--navbar-height);
+    z-index: 40;
+    height: calc(100vh - var(--navbar-height));
+    width: var(--sidebar-width);
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+    overflow: visible;
+}
+
+/* Fixed Main Content - Always accounts for sidebar */
+.main-content-fixed {
+    margin-left: var(--sidebar-width);
+    min-height: calc(100vh - var(--navbar-height));
+    background: #f9fafb;
+}
+
+/* Sidebar navigation items - Icons only */
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 4px 8px;
+    text-decoration: none;
+    color: #6b7280;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    cursor: pointer;
+}
+
+.sidebar-nav-item:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.sidebar-nav-item.active {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Ensure SVG icons are properly sized */
+.sidebar-nav-item svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+/* ===== WORKING TOOLTIP STYLES ===== */
+.sidebar-nav-item::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 16px);
+    top: 50%;
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 99999;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: -20px;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    display: block;
+    font-family: inherit;
+}
+
+/* Tooltip arrow */
+.sidebar-nav-item::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid #1f2937;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 99998;
+    pointer-events: none;
+    margin-top: -6px;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    display: block;
+}
+
+/* Show tooltips on hover */
+.sidebar-nav-item:hover::after,
+.sidebar-nav-item:hover::before {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Custom button styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary {
+    background-color: #f8fafc;
+    color: var(--secondary-color);
+    border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #047857;
+}
+
+.btn-error, .btn-danger {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.btn-error:hover, .btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+/* Alert styles */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background-color: #dcfce7;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.alert-error, .alert-danger {
+    background-color: #fee2e2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.alert-warning {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.alert-info {
+    background-color: #dbeafe;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Spinner */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(156, 163, 175, 0.3);
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Table styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table th {
+    background-color: #f9fafb;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Card styles */
+.card {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+/* Badge styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-primary {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-error, .badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-info {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+.badge-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .sidebar-fixed {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        width: 256px;
+        z-index: 50;
+    }
+    
+    .sidebar-fixed.mobile-open {
+        transform: translateX(0);
+    }
+    
+    .main-content-fixed {
+        margin-left: 0;
+    }
+    
+    .sidebar-nav-item {
+        width: auto;
+        height: auto;
+        padding: 0.75rem;
+        margin: 0.25rem 0.5rem;
+        justify-content: flex-start;
+    }
+    
+    .sidebar-nav-item::after,
+    .sidebar-nav-item::before {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    
+    .sidebar-nav-item svg {
+        margin-right: 0.75rem;
+    }
+}

@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block title %}Cases - IFT Ignite Portal{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Cases</h1>
+            <p class="mt-1 text-sm text-gray-600">Manage customer support cases</p>
+        </div>
+        <a href="{{ url_for('cases_new') }}" class="btn btn-primary">
+            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Case
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text" name="search" id="search" value="{{ search or '' }}" 
+                       placeholder="Case subject, financial institution..." 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            
+            <!-- STATUS DROPDOWN - USING DYNAMIC FILTERS -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Statuses</option>
+                    {% if dynamic_filters and dynamic_filters.get('case_status') %}
+                        {% for status_option in dynamic_filters['case_status'] %}
+                            <option value="{{ status_option }}" {% if status == status_option %}selected{% endif %}>
+                                {{ status_option }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback options if dynamic filters not available -->
+                        <option value="New" {% if status == 'New' %}selected{% endif %}>New</option>
+                        <option value="Open" {% if status == 'Open' %}selected{% endif %}>Open</option>
+                        <option value="In Progress" {% if status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Pending" {% if status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Resolved" {% if status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="Closed" {% if status == 'Closed' %}selected{% endif %}>Closed</option>
+                        <option value="Escalated" {% if status == 'Escalated' %}selected{% endif %}>Escalated</option>
+                    {% endif %}
+                </select>
+            </div>
+            
+            <!-- CASE TYPE DROPDOWN - USING DYNAMIC FILTERS -->
+            <div>
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Case Type</label>
+                <select name="type" id="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Types</option>
+                    {% if dynamic_filters and dynamic_filters.get('case_type') %}
+                        {% for type_option in dynamic_filters['case_type'] %}
+                            <option value="{{ type_option }}" {% if case_type == type_option %}selected{% endif %}>
+                                {{ type_option }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback options if dynamic filters not available -->
+                        <option value="General" {% if case_type == 'General' %}selected{% endif %}>General</option>
+                        <option value="Payment Issue" {% if case_type == 'Payment Issue' %}selected{% endif %}>Payment Issue</option>
+                        <option value="Account Inquiry" {% if case_type == 'Account Inquiry' %}selected{% endif %}>Account Inquiry</option>
+                        <option value="Technical Support" {% if case_type == 'Technical Support' %}selected{% endif %}>Technical Support</option>
+                        <option value="Complaint" {% if case_type == 'Complaint' %}selected{% endif %}>Complaint</option>
+                        <option value="Collections" {% if case_type == 'Collections' %}selected{% endif %}>Collections</option>
+                        <option value="Delinquency" {% if case_type == 'Delinquency' %}selected{% endif %}>Delinquency</option>
+                    {% endif %}
+                </select>
+            </div>
+            
+            <!-- PRIORITY DROPDOWN - USING DYNAMIC FILTERS -->
+            <div>
+                <label for="priority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                <select name="priority" id="priority" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Priorities</option>
+                    {% if dynamic_filters and dynamic_filters.get('case_priority') %}
+                        {% for priority_option in dynamic_filters['case_priority'] %}
+                            <option value="{{ priority_option }}" {% if priority == priority_option %}selected{% endif %}>
+                                {{ priority_option }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback options if dynamic filters not available -->
+                        <option value="Low" {% if priority == 'Low' %}selected{% endif %}>Low</option>
+                        <option value="Medium" {% if priority == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="High" {% if priority == 'High' %}selected{% endif %}>High</option>
+                        <option value="Urgent" {% if priority == 'Urgent' %}selected{% endif %}>Urgent</option>
+                    {% endif %}
+                </select>
+            </div>
+            
+            <!-- FINANCIAL INSTITUTION DROPDOWN - USING DYNAMIC FILTERS -->
+            <div>
+                <label for="financial_institution" class="block text-sm font-medium text-gray-700 mb-1">Financial Institution</label>
+                <select name="financial_institution" id="financial_institution" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Institutions</option>
+                    {% if dynamic_filters and dynamic_filters.get('financial_institution') %}
+                        {% for fi_option in dynamic_filters['financial_institution'] %}
+                            <option value="{{ fi_option }}" {% if financial_institution == fi_option %}selected{% endif %}>
+                                {{ fi_option }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback options if dynamic filters not available -->
+                        <option value="Cleo Financial" {% if financial_institution == 'Cleo Financial' %}selected{% endif %}>Cleo Financial</option>
+                        <option value="OpenRoad" {% if financial_institution == 'OpenRoad' %}selected{% endif %}>OpenRoad</option>
+                        <option value="TD Bank" {% if financial_institution == 'TD Bank' %}selected{% endif %}>TD Bank</option>
+                        <option value="RBC" {% if financial_institution == 'RBC' %}selected{% endif %}>RBC</option>
+                    {% endif %}
+                </select>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="flex items-end">
+                <button type="submit" class="btn btn-primary w-full">Filter</button>
+            </div>
+            
+            <!-- Hidden fields to preserve sort parameters -->
+            <input type="hidden" name="sort_by" value="{{ sort_by or '' }}">
+            <input type="hidden" name="sort_order" value="{{ sort_order or '' }}">
+        </form>
+        
+        <!-- DEBUG INFO (remove in production) -->
+        {% if dynamic_filters %}
+        <div class="mt-4 p-3 bg-gray-100 rounded text-xs text-gray-600">
+            <strong>🔍 Debug Info:</strong>
+            Dynamic filters loaded: {{ dynamic_filters.keys() | list | join(', ') }} |
+            Status options: {{ dynamic_filters.get('case_status', []) | length }} |
+            FI options: {{ dynamic_filters.get('financial_institution', []) | length }} |
+            Current status: "{{ status }}"
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Cases Table -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="id">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Case #
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="subject">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Subject
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="financial_institution">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Financial Institution
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="case_type">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Case Type
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="priority">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Priority
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="days_past_due">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Days Delinquent
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="total_owing">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Total Owing
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="status">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Status
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sortable-header" 
+                        data-sort="created_at">
+                        <div class="flex items-center cursor-pointer hover:text-gray-700">
+                            Created
+                            <span class="sort-indicator ml-1">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 12l5-5 5 5H5z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for case in cases %}
+                <tr class="hover:bg-gray-50 cursor-pointer case-row" data-case-id="{{ case.id }}">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">Case #{{ case.id }}</div>
+                        <div class="text-sm text-gray-500">{{ case.case_number or ('CASE' + '%06d'|format(case.id)) }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">{{ case.subject or 'No Subject' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">
+                            {% if case.loan and case.loan.financial_institution %}
+                                {{ case.loan.financial_institution }}
+                            {% elif case.account and case.account.financial_institution %}
+                                {{ case.account.financial_institution }}
+                            {% elif case.contact and case.contact.financial_institution %}
+                                {{ case.contact.financial_institution }}
+                            {% else %}
+                                <span class="text-gray-400">Unknown</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if case.case_type == 'Delinquency' %}bg-red-100 text-red-800
+                            {% elif case.case_type == 'Payment Issue' %}bg-yellow-100 text-yellow-800
+                            {% elif case.case_type == 'Collections' %}bg-orange-100 text-orange-800
+                            {% elif case.case_type == 'Account Inquiry' %}bg-blue-100 text-blue-800
+                            {% elif case.case_type == 'Technical Support' %}bg-purple-100 text-purple-800
+                            {% elif case.case_type == 'Complaint' %}bg-pink-100 text-pink-800
+                            {% else %}bg-gray-100 text-gray-800
+                            {% endif %}">
+                            {{ case.case_type or 'General' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if case.priority == 'Urgent' %}bg-red-100 text-red-800
+                            {% elif case.priority == 'High' %}bg-orange-100 text-orange-800
+                            {% elif case.priority == 'Medium' %}bg-yellow-100 text-yellow-800
+                            {% elif case.priority == 'Low' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800
+                            {% endif %}">
+                            {{ case.priority or 'Medium' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {% if case.loan and case.loan.days_past_due is not none %}
+                            <span class="{% if case.loan.days_past_due > 90 %}text-red-600 font-semibold
+                                      {% elif case.loan.days_past_due > 60 %}text-orange-600 font-medium
+                                      {% elif case.loan.days_past_due > 30 %}text-yellow-600
+                                      {% elif case.loan.days_past_due > 0 %}text-gray-900
+                                      {% else %}text-green-600
+                                      {% endif %}">
+                                {% if case.loan.days_past_due > 0 %}
+                                    {{ case.loan.days_past_due }} days
+                                {% else %}
+                                    Current
+                                {% endif %}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {% if case.loan and (case.loan.past_due_amount or case.loan.past_due_fees) %}
+                            {% set past_due_num = case.loan.past_due_amount|float if case.loan.past_due_amount else 0.0 %}
+                            {% set fees_num = case.loan.past_due_fees|float if case.loan.past_due_fees else 0.0 %}
+                            <span class="font-medium">
+                                ${{ "%.2f"|format(past_due_num + fees_num) }}
+                            </span>
+                        {% elif case.amount_involved %}
+                            <span class="font-medium text-blue-600">
+                                ${{ "%.2f"|format(case.amount_involved|float) }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">$0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="badge {% if case.status == 'New' %}bg-blue-100 text-blue-800{% elif case.status == 'Open' %}badge-primary{% elif case.status == 'Closed' %}badge-secondary{% elif case.status == 'In Progress' %}badge-warning{% else %}badge-secondary{% endif %}">
+                            {{ case.status or 'Open' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ case.created_at | date }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <!-- Edit Icon -->
+                            <a href="{{ url_for('cases_edit', case_id=case.id) }}" 
+                               class="action-icon edit-icon text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                               title="Edit Case"
+                               onclick="event.stopPropagation();">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </a>
+                            
+                            <!-- Close Case Button -->
+                            {% if case.status == 'Open' %}
+                            <button data-close-case="{{ case.id }}" 
+                                    class="text-gray-600 hover:text-gray-900 text-sm font-medium hover:bg-gray-100 px-2 py-1 rounded"
+                                    onclick="event.stopPropagation();">
+                                Close
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="px-6 py-4 text-center text-gray-500">
+                        No cases found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages is defined and total_pages > 1 %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% if has_prev is defined and has_prev %}
+                <a href="{{ url_for('cases_index', page=(page|default(1))-1, search=search|default(''), type=case_type|default(''), status=status|default(''), financial_institution=financial_institution|default(''), priority=priority|default(''), sort_by=sort_by|default(''), sort_order=sort_order|default('')) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+            {% endif %}
+            {% if has_next is defined and has_next %}
+                <a href="{{ url_for('cases_index', page=(page|default(1))+1, search=search|default(''), type=case_type|default(''), status=status|default(''), financial_institution=financial_institution|default(''), priority=priority|default(''), sort_by=sort_by|default(''), sort_order=sort_order|default('')) }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            {% endif %}
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing page <span class="font-medium">{{ page|default(1) }}</span> of <span class="font-medium">{{ total_pages }}</span> 
+                    ({{ total|default(0) }} total cases)
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {% if has_prev is defined and has_prev %}
+                        <a href="{{ url_for('cases_index', page=(page|default(1))-1, search=search|default(''), type=case_type|default(''), status=status|default(''), financial_institution=financial_institution|default(''), priority=priority|default(''), sort_by=sort_by|default(''), sort_order=sort_order|default('')) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if has_next is defined and has_next %}
+                        <a href="{{ url_for('cases_index', page=(page|default(1))+1, search=search|default(''), type=case_type|default(''), status=status|default(''), financial_institution=financial_institution|default(''), priority=priority|default(''), sort_by=sort_by|default(''), sort_order=sort_order|default('')) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Next
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stats Summary (if cases exist) -->
+    {% if cases %}
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">{{ cases | selectattr('status', 'equalto', 'Open') | list | length }}</span>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Open Cases</dt>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">{{ cases | selectattr('case_type', 'equalto', 'Delinquency') | list | length }}</span>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Delinquency Cases</dt>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">{{ cases | selectattr('status', 'equalto', 'In Progress') | list | length }}</span>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">{{ cases | selectattr('status', 'equalto', 'Closed') | list | length }}</span>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Closed Cases</dt>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Sorting Styles -->
+<style>
+.sortable-header {
+    user-select: none;
+}
+
+.sortable-header:hover {
+    background-color: #f9fafb;
+}
+
+.sort-indicator {
+    transition: transform 0.2s ease;
+}
+
+.sortable-header:hover .sort-indicator {
+    transform: scale(1.1);
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cases.js') }}"></script>
+{% endblock %}

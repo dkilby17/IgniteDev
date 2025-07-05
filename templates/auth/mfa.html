@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication - IFT Ignite Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <svg class="mx-auto h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">Two-Factor Authentication</h3>
+                <p class="mt-2 text-sm text-gray-600">
+                    Enter the 6-digit code from your authenticator app
+                </p>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded"></div>
+            <div id="successMessage" class="hidden bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded"></div>
+
+            <form id="mfaForm" class="space-y-6">
+                <div>
+                    <label for="mfaCode" class="block text-sm font-medium text-gray-700">Authentication Code</label>
+                    <div class="mt-1">
+                        <input id="mfaCode" name="mfaCode" type="text" maxlength="7" placeholder="000 000"
+                               class="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-center text-xl font-mono"
+                               autocomplete="off" required>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" id="verifyButton"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+                        <span id="verifyButtonText">Verify</span>
+                        <div id="verifySpinner" class="hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <a href="/login" class="text-sm text-blue-600 hover:text-blue-500">
+                        ← Back to login
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configure API base URL for FastAPI backend
+        window.API_BASE_URL = 'http://localhost:8000';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('MFA page loaded');
+            
+            // Store tokens from Flask session into localStorage
+            var tempToken = '{{ temp_token|default("") }}';
+            var userInfoJson = '{{ user_info|tojson|safe if user_info else "" }}';
+            
+            if (tempToken) {
+                localStorage.setItem('temp_token', tempToken);
+                console.log('Temp token stored from Flask session');
+            }
+            
+            if (userInfoJson) {
+                localStorage.setItem('pending_user_info', userInfoJson);
+                console.log('User info stored from Flask session');
+            }
+            
+            console.log('Temp token:', localStorage.getItem('temp_token'));
+            
+            // Set up form submission
+            document.getElementById('mfaForm').addEventListener('submit', handleMFAVerification);
+            
+            // Auto-format MFA code input
+            document.getElementById('mfaCode').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 3) {
+                    e.target.value = value.slice(0, 3) + ' ' + value.slice(3, 6);
+                } else {
+                    e.target.value = value;
+                }
+            });
+        });
+
+        async function handleMFAVerification(e) {
+            e.preventDefault();
+            
+            const mfaCode = document.getElementById('mfaCode').value.replace(/\s/g, '');
+            
+            if (!mfaCode || mfaCode.length !== 6) {
+                showError('Please enter a valid 6-digit code');
+                return;
+            }
+            
+            const verifyButton = document.getElementById('verifyButton');
+            const buttonText = document.getElementById('verifyButtonText');
+            const spinner = document.getElementById('verifySpinner');
+            
+            try {
+                verifyButton.disabled = true;
+                buttonText.textContent = 'Verifying...';
+                spinner.classList.remove('hidden');
+                hideMessages();
+                
+                const tempToken = localStorage.getItem('temp_token');
+                if (!tempToken) {
+                    showError('No temporary token found. Please log in again.');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                    return;
+                }
+                
+                console.log('Verifying MFA with FastAPI backend...');
+                
+                const response = await fetch(`${window.API_BASE_URL}/api/auth/mfa/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${tempToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mfa_code: mfaCode })
+                });
+                
+                console.log('MFA verification response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store the final access token in localStorage
+                    localStorage.setItem('access_token', data.access_token);
+                    
+                    // Store user info
+                    const pendingUserInfo = localStorage.getItem('pending_user_info');
+                    if (pendingUserInfo) {
+                        localStorage.setItem('user_info', pendingUserInfo);
+                        localStorage.removeItem('pending_user_info');
+                    } else if (data.user) {
+                        localStorage.setItem('user_info', JSON.stringify(data.user));
+                    }
+                    
+                    // Clean up temp token
+                    localStorage.removeItem('temp_token');
+                    
+                    console.log('MFA verification successful, updating Flask session...');
+                    
+                    // NEW: Notify Flask about successful MFA verification
+                    try {
+                        const flaskResponse = await fetch('/mfa', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams({
+                                'mfa_code': mfaCode,
+                                'access_token': data.access_token,
+                                'user_info': JSON.stringify(data.user || JSON.parse(pendingUserInfo || '{}'))
+                            })
+                        });
+                        
+                        if (flaskResponse.ok) {
+                            // Flask session updated successfully
+                            console.log('Flask session updated successfully');
+                            showSuccess('Authentication successful! Redirecting...');
+                            setTimeout(() => {
+                                window.location.href = '/dashboard';
+                            }, 1000);
+                        } else {
+                            console.error('Flask session update failed:', flaskResponse.status);
+                            // Fallback: redirect anyway since FastAPI verification succeeded
+                            showSuccess('Authentication successful! Redirecting...');
+                            setTimeout(() => {
+                                window.location.href = '/dashboard';
+                            }, 1000);
+                        }
+                    } catch (flaskError) {
+                        console.error('Error updating Flask session:', flaskError);
+                        // Fallback: redirect anyway since FastAPI verification succeeded
+                        showSuccess('Authentication successful! Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1000);
+                    }
+                    
+                } else {
+                    const error = await response.json();
+                    console.error('MFA verification error:', error);
+                    
+                    if (response.status === 423) {
+                        showError('Account is temporarily locked. Please try again later.');
+                    } else {
+                        showError(error.detail || 'Invalid authentication code');
+                        document.getElementById('mfaCode').value = '';
+                        document.getElementById('mfaCode').focus();
+                    }
+                }
+            } catch (error) {
+                console.error('MFA verification error:', error);
+                showError('Verification failed. Please try again.');
+            } finally {
+                verifyButton.disabled = false;
+                buttonText.textContent = 'Verify';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
